@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from langchain_core.messages import AIMessage
 
 
-@dataclass
+@dataclass(frozen=True)
 class LlmResult:
     text: str
     meta_daten: dict
