@@ -21,7 +21,7 @@ class LlmDiagnosticUtil:
 
     """ Harte Regel-Pruefungen """
 
-    def rule_based_check(
+    def _rule_based_check(
         self,
         *,
         prompt_tokens: int,
@@ -55,7 +55,7 @@ class LlmDiagnosticUtil:
 
         return None
 
-    def llm_based_check(
+    def _llm_based_check(
         self,
         *,
         prompt_tokens: int,
@@ -93,3 +93,6 @@ class LlmDiagnosticUtil:
         ]
 
         return structered_llm.invoke(messages)
+
+    def diagnose(self, *, prompt_tokens: int, completion_tokens: int, latency_ms: int, task_type: str) -> LlmDiagnosis:
+        
