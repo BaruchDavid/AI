@@ -42,6 +42,9 @@ class MyChatGpt:
 
     def __build_message(self, prompt) -> list:
         return [
-            SystemMessage(content="Translate the following from English to German"),
+            SystemMessage(
+                content="You are a professional translator. "
+                + "Translate the following English text to German.Return only the translation."
+            ),
             HumanMessage(content=prompt),
         ]
