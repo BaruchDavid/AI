@@ -3,6 +3,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_community.chat_models import ChatOllama
+from Llm_Result import LlmResult
 
 
 class MyChatGpt:
@@ -34,9 +35,10 @@ class MyChatGpt:
 
     """ Direkter Message-Ansatz """
 
-    def execute_prompt(self, prompt) -> AIMessage:
+    def execute_prompt(self, prompt) -> LlmResult:
         message_prompt = self.__build_message(prompt)
-        return self.__llm.invoke(message_prompt)
+        raw_result = self.__llm.invoke(message_prompt)
+        return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
 
     def __build_message(self, prompt) -> list:
         return [

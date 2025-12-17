@@ -15,7 +15,8 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
 myChatGpt = MyChatGpt("gemma:2b")
 result = myChatGpt.execute_prompt("wonderful")
-print(f"content: {result.content} , metadaten: {result.response_metadata}")
+
+print(f"content: {result.text} , with modell: {result.meta_daten["model"]}")
 
 
 st.title("Langchain with gemma:2b")
