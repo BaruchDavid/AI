@@ -58,7 +58,7 @@ class LlmDiagnosticUtil:
     def llm_based_check(
         self,
         *,
-        promt_tokens: int,
+        prompt_tokens: int,
         completion_tokens: int,
         latency_ms: int,
         task_type: str,
