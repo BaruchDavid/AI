@@ -3,7 +3,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_community.chat_models import ChatOllama
-from Llm_Result import LlmResult
+from llm_Result import LlmResult
 
 
 class MyChatGpt:
@@ -15,12 +15,16 @@ class MyChatGpt:
             StrOutputParser()
         )  ## definiere und initialisiere instanz-variablen
 
+    def get_llm(self) -> ChatOllama:
+        return self.__llm
+
     """ Chain-basierter Ansatz """
 
-    def execute_chain(self, message: str) -> str:
+    def execute_chain(self, message: str) -> LlmResult:
         prompt = self.__build_prompt()
-        chain = prompt | self.__llm | self.__output_parser
-        return chain.invoke({"question": message})
+        chain = prompt | self.__llm
+        raw_result = chain.invoke({"question": message})
+        return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
 
     def __build_prompt(self) -> ChatPromptTemplate:
         return ChatPromptTemplate.from_messages(
