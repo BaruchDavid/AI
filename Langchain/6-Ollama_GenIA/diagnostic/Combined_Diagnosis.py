@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from Llm_Diagnosis import LlmDiagnosis
+from .llm_Diagnosis import LlmDiagnosis
 
 
 class CombinedDiagnosis(BaseModel):
