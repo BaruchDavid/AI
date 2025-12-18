@@ -1,7 +1,9 @@
 from typing import Any, Mapping, Optional
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from Llm_Diagnosis import LlmDiagnosis
+from .diagnosis_Mode import DiagnosisMode
+from .llm_Diagnosis import LlmDiagnosis
+from .combined_Diagnosis import CombinedDiagnosis
 
 
 class LlmDiagnosticUtil:
@@ -94,5 +96,119 @@ class LlmDiagnosticUtil:
 
         return structered_llm.invoke(messages)
 
-    def diagnose(self, *, prompt_tokens: int, completion_tokens: int, latency_ms: int, task_type: str) -> LlmDiagnosis:
-        
+    def diagnose(
+        self,
+        *,
+        prompt_tokens: int,
+        completion_tokens: int,
+        latency_ms: int,
+        task_type: str,
+        diagnose_mode: DiagnosisMode = DiagnosisMode.RULES_AND_LLM,
+    ) -> CombinedDiagnosis:
+
+        rule_result: LlmDiagnosis | None = None
+        llm_result: LlmDiagnosis | None = None
+
+        # --- RULES_ONLY ---
+        if diagnose_mode == DiagnosisMode.RULES_ONLY:
+            rule_result = self._rule_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            final = rule_result or LlmDiagnosis(
+                issue="normal",
+                confidence=1.0,
+                reason="No rule-based issues detected.",
+            )
+
+            return CombinedDiagnosis(
+                rule_based=rule_result,
+                llm_based=final,
+                final=final,
+            )
+
+        # --- LLM_ONLY ---
+        if diagnose_mode == DiagnosisMode.LLM_ONLY:
+            llm_result = self._llm_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            return CombinedDiagnosis(
+                rule_based=None,
+                llm_based=llm_result,
+                final=llm_result,
+            )
+
+        # --- RULES_THEN_LLM ---
+        if diagnose_mode == DiagnosisMode.RULES_THEN_LLM:
+            rule_result = self._rule_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            if rule_result:
+                return CombinedDiagnosis(
+                    rule_based=rule_result,
+                    llm_based=rule_result,
+                    final=rule_result,
+                )
+
+            llm_result = self._llm_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            return CombinedDiagnosis(
+                rule_based=None,
+                llm_based=llm_result,
+                final=llm_result,
+            )
+
+        # --- RULES_AND_LLM (default / dein Wunsch) ---
+        if diagnose_mode == DiagnosisMode.RULES_AND_LLM:
+            rule_result = self._rule_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            llm_result = self._llm_based_check(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+                task_type=task_type,
+            )
+
+            # Entscheidungslogik: LLM gewinnt, aber Regeln beeinflussen Confidence
+            final = llm_result
+
+            if rule_result and rule_result.issue != llm_result.issue:
+                final = LlmDiagnosis(
+                    issue=llm_result.issue,
+                    confidence=min(llm_result.confidence, rule_result.confidence),
+                    reason=(
+                        f"Rule-based check suggested '{rule_result.issue}'. "
+                        f"LLM analysis suggested '{llm_result.issue}'. "
+                        f"Final decision based on LLM."
+                    ),
+                )
+
+            return CombinedDiagnosis(
+                rule_based=rule_result,
+                llm_based=llm_result,
+                final=final,
+            )
+
+        # --- Sicherheitsnetz ---
+        raise ValueError(f"Unsupported diagnosis mode: {diagnose_mode}")
