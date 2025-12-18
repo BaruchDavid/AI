@@ -1,7 +1,6 @@
-.vscode/launch.json
-.vscode/settings.json
 Langchain/.env
 Langchain/1-DataIgnestion/HKurs.txt
 Langchain/1-DataIgnestion/Tempel.pdf
 Langchain/5-OpenAI/chroma_db/*
-Langchain/6-Ollama_GenIA/__pycache__/my_chat_gpt.cpython-313.pyc
+Langchain/6-Ollama_GenIA/__pycache__/*
+Langchain/6-Ollama_GenIA/diagnostic/__pycache__/*
