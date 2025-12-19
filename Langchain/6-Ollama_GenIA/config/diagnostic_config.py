@@ -8,9 +8,3 @@ class DiagnosticConfig(BaseModel):
     hallucination_ratio_threshold: float = Field(gt=1.0)
     slow_latency_ms: int = Field(gt=0)
     min_completion_tokens: int = Field(ge=1)
-
-
-def load_diagnostic_config(path: str) -> DiagnosticConfig:
-    with open(path, "r") as config_file:
-        data = yaml.safe_load(config_file)
-    return DiagnosticConfig(**data["diagnostics"])
