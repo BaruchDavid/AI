@@ -11,6 +11,6 @@ class DiagnosticConfig(BaseModel):
 
 
 def load_diagnostic_config(path: str) -> DiagnosticConfig:
-    with open(path, "r") as f:
-        data = yaml.safe_load(f)
+    with open(path, "r") as config_file:
+        data = yaml.safe_load(config_file)
     return DiagnosticConfig(**data["diagnostics"])
