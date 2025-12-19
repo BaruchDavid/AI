@@ -27,6 +27,8 @@ class LlmDiagnosticUtil:
 
     """ Harte Regel-Pruefungen """
 
+    from typing import Optional
+
     def _rule_based_check(
         self,
         *,
@@ -35,28 +37,74 @@ class LlmDiagnosticUtil:
         latency_ms: int,
         task_type: str,
     ) -> Optional[LlmDiagnosis]:
-        # 1️⃣ Antwort bricht ab
-        if completion_tokens < 5 and task_type in {"explanation", "analysis"}:
+        """
+        Rule-based diagnostics.
+
+        Priority order:
+        1. Truncated response (unexpectedly short completion)
+        2. Context loss (prompt near/exceeds context window)
+        3. Slow response (high latency)
+        4. Hallucination risk (unexpectedly long completion)
+        """
+
+        # Avoid division by zero
+        expected_tokens = max(self.__max_expected_completion_tokens, 1)
+        completion_ratio = completion_tokens / expected_tokens
+
+        ## 1️⃣ Truncated response (too short for the task)
+        ## < 30 % der erwarteten Länge bei erklärenden Tasks fast immer unvollständig
+        ## < 10 % dann würde man echte Abbrüche zu spät erkennen
+        ## < 50 % könnte eine kurze pregnante Antwort sein
+
+        if completion_ratio < 0.3 and task_type in {"explanation", "analysis"}:
             return LlmDiagnosis(
                 issue="truncated_response",
                 confidence=0.9,
-                reason="Completation tokens are to less for 'explantion, analysis' task",
+                reason=(
+                    f"Completion tokens ({completion_tokens}) are significantly below "
+                    f"the expected amount ({expected_tokens}) for task type '{task_type}'."
+                ),
             )
 
-        # 2️⃣ Kontextverlust
-        if prompt_tokens > self.__max_prompt_tokens:
+        ## 2️⃣ Context loss (near or exceeding prompt limit)
+        ## Kontextverlust beginnt vor dem harten Limit
+        ## viele Modelle degradieren ab ~90–95 %
+        if prompt_tokens >= int(self.__max_prompt_tokens * 0.95):
             return LlmDiagnosis(
                 issue="context_loss",
                 confidence=0.8,
-                reason="max prompt token limit has been exceeded!!!",
+                reason=(
+                    f"Prompt tokens ({prompt_tokens}) are near or exceed the maximum "
+                    f"allowed limit ({self.__max_prompt_tokens})."
+                ),
             )
 
-        # 3️⃣ Langsame Antwort
+        # 3️⃣ Slow response
+        # TODO: __slow_latency_ms muss man konfiguiren können
         if latency_ms > self.__slow_latency_ms:
             return LlmDiagnosis(
                 issue="slow_response",
                 confidence=0.85,
-                reason="max slow latency has been exceeded",
+                reason=(
+                    f"Latency ({latency_ms} ms) exceeds the configured slow-response "
+                    f"threshold ({self.__slow_latency_ms} ms)."
+                ),
+            )
+
+        ## 4️⃣ Hallucination risk (unexpectedly long completion)
+        ## Gedanke: Fast doppelte Länge → LLM schweift vom Thema ab
+        ## Warum nicht 1.2? erklärende Antworten können länger sein
+        ## Warum nicht 3.0? dann erkennt man Probleme zu spät
+        ## 📌 1.7–2.0 ist ein guter Sweet Spot
+        if completion_ratio > 1.8:
+            return LlmDiagnosis(
+                issue="hallucination_risk",
+                confidence=0.7,
+                reason=(
+                    f"Completion tokens ({completion_tokens}) significantly exceed "
+                    f"the expected amount ({expected_tokens}), indicating potential "
+                    f"hallucination or prompt misinterpretation."
+                ),
             )
 
         return None
