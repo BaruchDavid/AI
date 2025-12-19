@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Literal
+from pydantic import Field
 
 """ Das ist kein normaler Datencontainer, sondern:
 ✔️ Eingabe von einer LLM
@@ -22,5 +23,5 @@ class LlmDiagnosis(BaseModel):
         "slow_response",
         "hallucination_risk",
     ]
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0)
     reason: str
