@@ -17,7 +17,7 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
 
 llm_result: Optional[LlmResult] = None
-myChatGpt = MyChatGpt("gemma:2b")
+myChatGpt = MyChatGpt("llama3.2:latest")
 
 
 st.title("Langchain with gemma:2b")
