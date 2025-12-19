@@ -8,6 +8,7 @@ from langchain_community.chat_models import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.messages import SystemMessage, HumanMessage
+from config.diagnostic_config import DiagnosticConfig
 
 
 class LlmDiagnosticUtil:
@@ -18,12 +19,12 @@ class LlmDiagnosticUtil:
         *,
         max_expected_completion_tokens: int = 50,
         max_prompt_tokens: int = 3000,
-        slow_latency_ms: int = 3000,
+        config: DiagnosticConfig,
     ):
         self.__llm = llm
         self.__max_expected_completion_tokens = max_expected_completion_tokens
         self.__max_prompt_tokens = max_prompt_tokens
-        self.__slow_latency_ms = slow_latency_ms
+        self.__config = config
 
     """ Harte Regel-Pruefungen """
 
@@ -56,7 +57,10 @@ class LlmDiagnosticUtil:
         ## < 10 % dann würde man echte Abbrüche zu spät erkennen
         ## < 50 % könnte eine kurze pregnante Antwort sein
 
-        if completion_ratio < 0.3 and task_type in {"explanation", "analysis"}:
+        if (
+            completion_ratio < self.__config.hallucination_ratio_threshold
+            and task_type in {"explanation", "analysis"}
+        ):
             return LlmDiagnosis(
                 issue="truncated_response",
                 confidence=0.9,
@@ -69,7 +73,9 @@ class LlmDiagnosticUtil:
         ## 2️⃣ Context loss (near or exceeding prompt limit)
         ## Kontextverlust beginnt vor dem harten Limit
         ## viele Modelle degradieren ab ~90–95 %
-        if prompt_tokens >= int(self.__max_prompt_tokens * 0.95):
+        if prompt_tokens >= int(
+            self.__max_prompt_tokens * self.__config.context_warning_ratio
+        ):
             return LlmDiagnosis(
                 issue="context_loss",
                 confidence=0.8,
@@ -80,14 +86,13 @@ class LlmDiagnosticUtil:
             )
 
         # 3️⃣ Slow response
-        # TODO: __slow_latency_ms muss man konfiguiren können
-        if latency_ms > self.__slow_latency_ms:
+        if latency_ms > self.__config.slow_latency_ms:
             return LlmDiagnosis(
                 issue="slow_response",
                 confidence=0.85,
                 reason=(
                     f"Latency ({latency_ms} ms) exceeds the configured slow-response "
-                    f"threshold ({self.__slow_latency_ms} ms)."
+                    f"threshold ({self.__config.slow_latency_ms} ms)."
                 ),
             )
 
@@ -96,7 +101,7 @@ class LlmDiagnosticUtil:
         ## Warum nicht 1.2? erklärende Antworten können länger sein
         ## Warum nicht 3.0? dann erkennt man Probleme zu spät
         ## 📌 1.7–2.0 ist ein guter Sweet Spot
-        if completion_ratio > 1.8:
+        if completion_ratio > self.__config.hallucination_ratio_threshold:
             return LlmDiagnosis(
                 issue="hallucination_risk",
                 confidence=0.7,
