@@ -1,0 +1,6 @@
+diagnostics:
+  truncated_ratio_threshold: 0.3
+  context_warning_ratio: 0.95
+  hallucination_ratio_threshold: 1.8
+  slow_latency_ms: 4000
+  min_completion_tokens: 5
