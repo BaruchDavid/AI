@@ -7,6 +7,7 @@ from my_chat_gpt import MyChatGpt
 from diagnostic.llm_Diagnostics_Util import LlmDiagnosticUtil
 from diagnostic.diagnosis_Mode import DiagnosisMode
 from llm_Result import LlmResult
+from loaders.load_config import load_diagnostic_config
 
 load_dotenv()
 
@@ -29,14 +30,16 @@ if input_text:
     st.write(llm_result.text)
 
 
-llm_diagnostic = LlmDiagnosticUtil(
-    llm=myChatGpt.get_llm(),
-    max_expected_completion_tokens=400,
-    max_prompt_tokens=30,
-    slow_latency_ms=3000,
-)
-
 if llm_result is not None:
+
+    config = load_diagnostic_config("./Langchain/6-Ollama_GenIA/config.yaml")
+    llm_diagnostic = LlmDiagnosticUtil(
+        llm=myChatGpt.get_llm(),
+        max_expected_completion_tokens=400,
+        max_prompt_tokens=30,
+        config=config,
+    )
+
     llm_diagnostic.diagnose(
         prompt_tokens=llm_result.meta_daten["prompt_tokens"],
         completion_tokens=llm_result.meta_daten["completion_tokens"],
