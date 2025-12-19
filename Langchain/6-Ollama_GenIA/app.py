@@ -5,7 +5,7 @@ from langchain_community.llms import Ollama
 import streamlit as st
 from my_chat_gpt import MyChatGpt
 from diagnostic.llm_Diagnostics_Util import LlmDiagnosticUtil
-from diagnostic.diagnosis_Mode import DiagnosisMode
+from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from llm_Result import LlmResult
 from loaders.load_config import load_diagnostic_config
 
