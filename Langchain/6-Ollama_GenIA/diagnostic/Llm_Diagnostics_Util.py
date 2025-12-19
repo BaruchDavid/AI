@@ -4,6 +4,10 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from .diagnosis_Mode import DiagnosisMode
 from .llm_Diagnosis import LlmDiagnosis
 from .combined_Diagnosis import CombinedDiagnosis
+from langchain_community.chat_models import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.messages import SystemMessage, HumanMessage
 
 
 class LlmDiagnosticUtil:
@@ -57,6 +61,13 @@ class LlmDiagnosticUtil:
 
         return None
 
+    """     
+    ✔ ChatPromptTemplate.from_messages
+    ✔ {format_instructions} im Human-Teil
+    ✔ PydanticOutputParser → richtiges Tool
+    ✔ prompt | self.__llm | parser → richtige Chain
+    ✔ Typisierte Rückgabe LlmDiagnosis """
+
     def _llm_based_check(
         self,
         *,
@@ -66,35 +77,60 @@ class LlmDiagnosticUtil:
         task_type: str,
     ) -> LlmDiagnosis:
 
-        structered_llm = self.__llm.with_structured_output(LlmDiagnosis)
-
-        messages = [
-            SystemMessage(
-                content=(
+        pydanticOutputParser = PydanticOutputParser(pydantic_object=LlmDiagnosis)
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
                     "You are an LLM diagnostics assistant. "
-                    "Analyze the following metadata and identify the most likely issue."
-                )
-            ),
-            HumanMessage(
-                content=f"""
-                            Task type: {task_type}
-                            Prompt tokens: {prompt_tokens}
-                            Completion tokens: {completion_tokens}
-                            Latency (ms): {latency_ms}
+                    "Analyze the following metadata and identify the most likely issue.",
+                ),
+                (
+                    "human",
+                    """
+                Task type: {task_type}
+                Prompt tokens: {prompt_tokens}
+                Completion tokens: {completion_tokens}
+                Latency (ms): {latency_ms}
 
-                            Choose one issue:
-                            - normal
-                            - truncated_response
-                            - context_loss
-                            - slow_response
-                            - hallucination_risk
+                Choose ONE issue from the following list:
+                - normal
+                - truncated_response
+                - context_loss
+                - slow_response
+                - hallucination_risk
 
-                            Provide a short reason and confidence.
-                            """
-            ),
-        ]
+                Return ONLY valid JSON.
+                Do not add explanations or markdown.
 
-        return structered_llm.invoke(messages)
+                {format_instructions}
+                """,
+                ),
+            ]
+        )
+
+        prompt = prompt.partial(
+            format_instructions=pydanticOutputParser.get_format_instructions()
+        )
+
+        chain = prompt | self.__llm | pydanticOutputParser
+
+        try:
+            return chain.invoke(
+                {
+                    "task_type": task_type,
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "latency_ms": latency_ms,
+                }
+            )
+        except Exception as e:
+            # optional: fallback
+            return LlmDiagnosis(
+                issue="hallucination_risk",
+                reason="LLM output could not be parsed reliably.",
+                confidence=0.3,
+            )
 
     def diagnose(
         self,
