@@ -15,8 +15,8 @@ class LlmDiagnosticUtil:
 
     def __init__(
         self,
-        llm: ChatOllama,
         *,
+        llm: ChatOllama,
         max_expected_completion_tokens: int = 50,
         max_prompt_tokens: int = 3000,
         config: DiagnosticConfig,
