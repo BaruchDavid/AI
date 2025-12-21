@@ -1,9 +1,9 @@
 from typing import Optional
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from .diagnosis_Mode import DiagnosisMode
-from .llm_Diagnosis import LlmDiagnosis
-from .combined_Diagnosis import CombinedDiagnosis
+from diagnostic.model.diagnosis_Mode import DiagnosisMode
+from diagnostic.model.llm_Diagnosis import LlmDiagnosis
+from diagnostic.model.combined_Diagnosis import CombinedDiagnosis
 from langchain_community.chat_models import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
