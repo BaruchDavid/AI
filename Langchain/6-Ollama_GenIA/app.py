@@ -8,6 +8,7 @@ from diagnostic.llm_Diagnostics_Util import LlmDiagnosticUtil
 from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from llm_Result import LlmResult
 from loaders.load_config import load_diagnostic_config
+from view.diagnosis_renderer import render_combined_diagnosis
 
 load_dotenv()
 
@@ -32,7 +33,7 @@ if input_text:
 
 if llm_result is not None:
 
-    config = load_diagnostic_config("./Langchain/6-Ollama_GenIA/config.yaml")
+    config = load_diagnostic_config("./config.yaml")
     llm_diagnostic = LlmDiagnosticUtil(
         llm=myChatGpt.get_llm(),
         max_expected_completion_tokens=400,
@@ -40,10 +41,12 @@ if llm_result is not None:
         config=config,
     )
 
-    llm_diagnostic.diagnose(
+    diagnostic_result = llm_diagnostic.diagnose(
         prompt_tokens=llm_result.meta_daten["prompt_tokens"],
         completion_tokens=llm_result.meta_daten["completion_tokens"],
         latency_ms=llm_result.meta_daten["latency_ms"],
         task_type="analys",
         diagnose_mode=DiagnosisMode.RULES_AND_LLM,
     )
+
+    render_combined_diagnosis(diagnostic_result)
