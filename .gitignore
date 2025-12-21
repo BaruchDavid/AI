@@ -5,3 +5,4 @@ Langchain/5-OpenAI/chroma_db/*
 Langchain/6-Ollama_GenIA/__pycache__/*
 Langchain/6-Ollama_GenIA/diagnostic/__pycache__/*
 Langchain/6-Ollama_GenIA/loaders/__pycache__/*
+Langchain/6-Ollama_GenIA/view/__pycache__/*
