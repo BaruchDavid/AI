@@ -23,9 +23,12 @@ def render_combined_diagnosis(diagnosis: CombinedDiagnosis):
 
 
 def render_diagnosis(title: str, diagnosis: LlmDiagnosis) -> None:
-    emoji, color = ISSUE_STYLE[diagnosis.issue]
+    emoji, font_color = ISSUE_STYLE[diagnosis.issue]
 
-    st.markdown(f"### {emoji} {title}")
+    st.markdown(
+        f"### <span style='color:{font_color}'>{emoji} {title}</span>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         f"""
