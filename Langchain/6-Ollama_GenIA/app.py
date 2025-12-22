@@ -2,6 +2,7 @@ import os
 from typing import Optional
 from dotenv import load_dotenv
 from langchain_community.llms import Ollama
+from pathlib import Path
 import streamlit as st
 from my_chat_gpt import MyChatGpt
 from diagnostic.llm_Diagnostics_Util import LlmDiagnosticUtil
@@ -33,7 +34,8 @@ if input_text:
 
 if llm_result is not None:
 
-    config = load_diagnostic_config("./config.yaml")
+    config_path = Path(__file__).parent / "config.yaml"
+    config = load_diagnostic_config(config_path)
     llm_diagnostic = LlmDiagnosticUtil(
         llm=myChatGpt.get_llm(),
         max_expected_completion_tokens=400,
