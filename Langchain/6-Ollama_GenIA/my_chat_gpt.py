@@ -1,4 +1,8 @@
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
@@ -21,19 +25,23 @@ class MyChatGpt:
     """ Chain-basierter Ansatz """
 
     def execute_chain(self, message: str) -> LlmResult:
-        prompt = self.__build_prompt()
+        # Prompt erstellen – Userfrage wird direkt in das Template eingefügt
+        prompt = self.__build_prompt(message)
+
+        # Chain bauen (angenommen self.__llm ist bereits definiert)
         chain = prompt | self.__llm
-        raw_result = chain.invoke({"question": message})
+
+        # Prompt ausführen, kein Dict nötig, da die Frage schon im Template steckt
+        raw_result = chain.invoke({})
         return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
 
-    def __build_prompt(self) -> ChatPromptTemplate:
+    def __build_prompt(self, user_question: str) -> ChatPromptTemplate:
         return ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    "You are a helpful assistant. Please respond to the question asked",
+                SystemMessagePromptTemplate.from_template(
+                    "You are a helpful assistant. Please respond to the question asked"
                 ),
-                ("user", "Question: {question}"),
+                HumanMessagePromptTemplate.from_template(user_question),
             ]
         )
 
