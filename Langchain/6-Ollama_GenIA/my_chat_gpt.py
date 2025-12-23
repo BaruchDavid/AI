@@ -25,12 +25,8 @@ class MyChatGpt:
     """ Chain-basierter Ansatz """
 
     def execute_chain(self, message: str) -> LlmResult:
-        # Prompt erstellen – Userfrage wird direkt in das Template eingefügt
         prompt = self.__build_prompt(message)
-
-        # Chain bauen (angenommen self.__llm ist bereits definiert)
         chain = prompt | self.__llm
-
         # Prompt ausführen, kein Dict nötig, da die Frage schon im Template steckt
         raw_result = chain.invoke({})
         return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
