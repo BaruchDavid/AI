@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+
+  "formatters": {
+    "file_formatter": {
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+
+  "handlers": {
+    "rich_console": {
+      "class": "rich.logging.RichHandler",
+      "level": "DEBUG",
+      "rich_tracebacks": true,
+      "tracebacks_show_locals": true,
+      "show_time": true,
+      "show_level": true,
+      "show_path": false
+    },
+
+    "file": {
+      "class": "logging.FileHandler",
+      "level": "DEBUG",
+      "formatter": "file_formatter",
+      "filename": "app.log",
+      "encoding": "utf-8"
+    }
+  },
+
+  "root": {
+    "level": "DEBUG",
+    "handlers": ["rich_console", "file"]
+  }
+}
