@@ -14,10 +14,9 @@ class InMemoryChatHistory(BaseChatMessageHistory):
         self.logger = logging.getLogger(__name__)
         self.messages = []
 
-    def add_messages(self, messages):
-        self.logger.debug(f"Added message: {messages}")
-        self.messages.extend(messages)
-        self.logger.debug(f"all messages at now: {self.messages}")
+    def add_messages(self, message):
+        self.logger.debug(f"Added message to memory")
+        self.messages.extend(message)
 
     @override
     def clear(self):
