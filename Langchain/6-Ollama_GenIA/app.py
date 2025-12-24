@@ -11,6 +11,7 @@ from my_chat_gpt import MyChatGpt
 from diagnostic.llm_Diagnostics_Util import LlmDiagnosticUtil
 from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from llm_Result import LlmResult
+from history.session_history_store import SessionHistoryStore
 from loaders.load_config import load_diagnostic_config
 from view.diagnosis_renderer import render_combined_diagnosis
 
@@ -32,21 +33,24 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
 
 llm_result: Optional[LlmResult] = None
-myChatGpt = MyChatGpt("llama3.2:latest")
-
 
 st.title("Langchain with gemma:2b")
 input_text = st.text_input("What question you have in mind?")
-
 # --- Session init FIRST ---
 if "session_id" not in st.session_state:
     new_session_id = str(uuid.uuid4())
     st.session_state.session_id = new_session_id
     logger.debug(f"New session_id created: {new_session_id}")
 
+if "chat_gpt" not in st.session_state:
+    st.session_state.chat_gpt = MyChatGpt(
+        llm_name="llama3.2", history_store=SessionHistoryStore()
+    )
+
+
 if input_text:
     logger.debug(f"passing current session_id to llm: {st.session_state.session_id}")
-    llm_result = myChatGpt.execute_chain(
+    llm_result = st.session_state.chat_gpt.execute_chain(
         message=input_text, session_id=st.session_state.session_id
     )
     st.write(llm_result.text)
@@ -57,7 +61,7 @@ if llm_result is not None:
     config_path = BASE_DIR / "config.yaml"
     config = load_diagnostic_config(config_path)
     llm_diagnostic = LlmDiagnosticUtil(
-        llm=myChatGpt.get_llm(),
+        llm=st.session_state.chat_gpt.get_llm(),
         max_expected_completion_tokens=400,
         max_prompt_tokens=30,
         config=config,

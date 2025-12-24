@@ -1,43 +1,49 @@
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
-from langchain_core.output_parsers import StrOutputParser
-from langchain_community.llms import Ollama
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+import logging
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.chat_models import ChatOllama
 from llm_Result import LlmResult
+from history.session_history_store import SessionHistoryStore
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 
 class MyChatGpt:
-    def __init__(self, llm_name: str):
-        self.__llm = ChatOllama(
-            model=llm_name
-        )  ## definiere und initialisiere instanz-variablen
-        self.__output_parser = (
-            StrOutputParser()
-        )  ## definiere und initialisiere instanz-variablen
+    def __init__(self, *, llm_name: str, history_store: SessionHistoryStore):
+        self.logger = logging.getLogger(__name__)
+        self.__llm = ChatOllama(model=llm_name)
+        self._history_store = history_store
+        self._prompt = self.__build_prompt()
+        base_chain = self._prompt | self.__llm
+        self._chain = self._buildHistoryWrapper(base_chain)
+
+    ## definiert wie History benutzt wird
+    def _buildHistoryWrapper(self, base_chain) -> RunnableWithMessageHistory:
+        return RunnableWithMessageHistory(
+            base_chain,
+            self._history_store.get_history,
+            input_messages_key="input",
+            history_messages_key="chat_history",
+        )
 
     def get_llm(self) -> ChatOllama:
         return self.__llm
 
     """ Chain-basierter Ansatz """
 
-    def execute_chain(self, message: str) -> LlmResult:
-        prompt = self.__build_prompt(message)
-        chain = prompt | self.__llm
-        # Prompt ausführen, kein Dict nötig, da die Frage schon im Template steckt
-        raw_result = chain.invoke({})
+    def execute_chain(self, *, message: str, session_id: str) -> LlmResult:
+        raw_result = self._chain.invoke(
+            {"input": message},
+            config={"configurable": {"session_id": session_id}},
+        )
+
         return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
 
-    def __build_prompt(self, user_question: str) -> ChatPromptTemplate:
+    def __build_prompt(self) -> ChatPromptTemplate:
         return ChatPromptTemplate.from_messages(
             [
-                SystemMessagePromptTemplate.from_template(
-                    "You are a helpful assistant. Please respond to the question asked"
-                ),
-                HumanMessagePromptTemplate.from_template(user_question),
+                ("system", "You are a helpful assistant."),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{input}"),
             ]
         )
 
