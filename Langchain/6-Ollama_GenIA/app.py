@@ -1,7 +1,8 @@
 import os
+import uuid
+import logging
 from typing import Optional
 from dotenv import load_dotenv
-from langchain_community.llms import Ollama
 from pathlib import Path
 import streamlit as st
 from my_chat_gpt import MyChatGpt
@@ -12,6 +13,14 @@ from loaders.load_config import load_diagnostic_config
 from view.diagnosis_renderer import render_combined_diagnosis
 
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
+)
+logger = logging.getLogger("AIAppLogger")
 
 ## set envs for keeping app in LangSmith
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
@@ -26,9 +35,17 @@ myChatGpt = MyChatGpt("llama3.2:latest")
 st.title("Langchain with gemma:2b")
 input_text = st.text_input("What question you have in mind?")
 
+# --- Session init FIRST ---
+if "session_id" not in st.session_state:
+    new_session_id = str(uuid.uuid4())
+    st.session_state.session_id = new_session_id
+    logger.debug(f"New session_id created: {new_session_id}")
 
 if input_text:
-    llm_result = myChatGpt.execute_chain(input_text)
+    logger.debug(f"passing current session_id to llm: {st.session_state.session_id}")
+    llm_result = myChatGpt.execute_chain(
+        message=input_text, session_id=st.session_state.session_id
+    )
     st.write(llm_result.text)
 
 
