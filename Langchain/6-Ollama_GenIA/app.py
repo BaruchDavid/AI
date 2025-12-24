@@ -1,6 +1,8 @@
 import os
 import uuid
 import logging
+import logging.config
+import json
 from typing import Optional
 from dotenv import load_dotenv
 from pathlib import Path
@@ -14,13 +16,14 @@ from view.diagnosis_renderer import render_combined_diagnosis
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
-)
-logger = logging.getLogger("AIAppLogger")
+BASE_DIR = Path(__file__).resolve().parent
+config_path = BASE_DIR / "logging_config.json"
+
+with open(config_path) as config:
+    config = json.load(config)
+
+logging.config.dictConfig(config)
+logger = logging.getLogger(__name__)
 
 ## set envs for keeping app in LangSmith
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
@@ -51,7 +54,7 @@ if input_text:
 
 if llm_result is not None:
 
-    config_path = Path(__file__).parent / "config.yaml"
+    config_path = BASE_DIR / "config.yaml"
     config = load_diagnostic_config(config_path)
     llm_diagnostic = LlmDiagnosticUtil(
         llm=myChatGpt.get_llm(),
