@@ -34,7 +34,7 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
 llm_result: Optional[LlmResult] = None
 
-st.title("Langchain with gemma:2b")
+st.title("Langchain with llama3.2")
 input_text = st.text_input("What question you have in mind?")
 # --- Session init FIRST ---
 if "session_id" not in st.session_state:
@@ -48,12 +48,29 @@ if "chat_gpt" not in st.session_state:
     )
 
 
+def is_final_result(part) -> bool:
+    return isinstance(part, LlmResult)
+
+
 if input_text:
     logger.debug(f"passing current session_id to llm: {st.session_state.session_id}")
-    llm_result = st.session_state.chat_gpt.execute_chain(
+    # Platzhalter für den Stream
+    placeholder = st.empty()
+    full_text = ""
+    for part in st.session_state.chat_gpt.execute_chain(
         message=input_text, session_id=st.session_state.session_id
-    )
-    st.write(llm_result.text)
+    ):
+
+        if is_final_result(part):
+            llm_result = part
+        else:
+            placeholder.write(
+                full_text + part.content
+            )  # - Streamlit aktualisiert den Platzhalter sofort
+            full_text += part.content
+
+    # Optional: finalen Text irgendwo anzeigen oder weiterverarbeiten
+    st.write("Final:", llm_result.text)
 
 
 if llm_result is not None:
