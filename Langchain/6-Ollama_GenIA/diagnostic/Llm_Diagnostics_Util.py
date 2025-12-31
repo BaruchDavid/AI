@@ -1,13 +1,10 @@
-from typing import Optional
 from langchain_community.chat_models import ChatOllama
-from langchain_core.messages import SystemMessage, HumanMessage
 from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from diagnostic.model.llm_Diagnosis import LlmDiagnosis
 from diagnostic.model.combined_Diagnosis import CombinedDiagnosis
 from langchain_community.chat_models import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from langchain_core.messages import SystemMessage, HumanMessage
 from config.diagnostic_config import DiagnosticConfig
 
 
@@ -198,7 +195,6 @@ class LlmDiagnosticUtil:
         rule_result: LlmDiagnosis | None = None
         llm_result: LlmDiagnosis | None = None
 
-        # --- RULES_ONLY ---
         if diagnose_mode == DiagnosisMode.RULES_ONLY:
             rule_result = self._rule_based_check(
                 prompt_tokens=prompt_tokens,
@@ -219,7 +215,6 @@ class LlmDiagnosticUtil:
                 final=final,
             )
 
-        # --- LLM_ONLY ---
         if diagnose_mode == DiagnosisMode.LLM_ONLY:
             llm_result = self._llm_based_check(
                 prompt_tokens=prompt_tokens,
@@ -234,7 +229,6 @@ class LlmDiagnosticUtil:
                 final=llm_result,
             )
 
-        # --- RULES_THEN_LLM ---
         if diagnose_mode == DiagnosisMode.RULES_THEN_LLM:
             rule_result = self._rule_based_check(
                 prompt_tokens=prompt_tokens,
@@ -263,7 +257,6 @@ class LlmDiagnosticUtil:
                 final=llm_result,
             )
 
-        # --- RULES_AND_LLM (default / dein Wunsch) ---
         if diagnose_mode == DiagnosisMode.RULES_AND_LLM:
             rule_result = self._rule_based_check(
                 prompt_tokens=prompt_tokens,
