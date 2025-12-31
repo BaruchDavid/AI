@@ -1,6 +1,6 @@
 import logging
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_community.chat_models import ChatOllama
 from llm_Result import LlmResult
 from history.session_history_store import SessionHistoryStore
@@ -10,7 +10,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 class MyChatGpt:
     def __init__(self, *, llm_name: str, history_store: SessionHistoryStore):
         self.logger = logging.getLogger(__name__)
-        self.__llm = ChatOllama(model=llm_name)
+        self.__llm = ChatOllama(model=llm_name, streaming=True)
         self._history_store = history_store
         self._prompt = self.__build_prompt()
         base_chain = self._prompt | self.__llm
@@ -30,13 +30,22 @@ class MyChatGpt:
 
     """ Chain-basierter Ansatz """
 
-    def execute_chain(self, *, message: str, session_id: str) -> LlmResult:
-        raw_result = self._chain.invoke(
+    def execute_chain(self, *, message: str, session_id: str):
+        full_text = ""
+        for chunk in self._chain.stream(
             {"input": message},
             config={"configurable": {"session_id": session_id}},
-        )
+        ):
+            yield chunk
+            self.__save_history(history=full_text, chunk=chunk)
 
-        return LlmResult(raw_result.content, raw_result.response_metadata, raw_result)
+        raw_result = AIMessage(content=full_text, response_metadata={"streamed": True})
+        yield LlmResult(full_text, raw_result.response_metadata, raw_result)
+
+    def __save_history(self, *, history: str, chunk: str) -> str:
+        if hasattr(chunk, "content"):
+            history += chunk.content
+        return history
 
     def __build_prompt(self) -> ChatPromptTemplate:
         return ChatPromptTemplate.from_messages(
