@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-import yaml
+from typing import Literal
 
 
 class DiagnosticConfig(BaseModel):
@@ -8,3 +8,4 @@ class DiagnosticConfig(BaseModel):
     hallucination_ratio_threshold: float = Field(gt=1.0)
     slow_latency_ms: int = Field(gt=0)
     min_completion_tokens: int = Field(ge=1)
+    task_type: Literal["analysis", "explanation"]
