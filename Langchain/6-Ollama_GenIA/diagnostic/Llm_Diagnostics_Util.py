@@ -1,3 +1,4 @@
+import logging
 from langchain_community.chat_models import ChatOllama
 from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from diagnostic.model.llm_Diagnosis import LlmDiagnosis
@@ -22,6 +23,7 @@ class LlmDiagnosticUtil:
         self.__max_expected_completion_tokens = max_expected_completion_tokens
         self.__max_prompt_tokens = max_prompt_tokens
         self.__config = config
+        self.logger = logging.getLogger(__name__)
 
     """ Harte Regel-Pruefungen """
 
@@ -194,6 +196,8 @@ class LlmDiagnosticUtil:
 
         rule_result: LlmDiagnosis | None = None
         llm_result: LlmDiagnosis | None = None
+
+        self.logger.info(f"Rule_Based Diagnosis {diagnose_mode}")
 
         if diagnose_mode == DiagnosisMode.RULES_ONLY:
             rule_result = self._rule_based_check(
