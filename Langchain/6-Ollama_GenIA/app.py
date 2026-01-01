@@ -55,7 +55,7 @@ def is_final_result(part) -> bool:
 if input_text:
     logger.debug(f"passing current session_id to llm: {st.session_state.session_id}")
     # Platzhalter für den Stream
-    placeholder = st.empty()
+    stream_placeholder = st.empty()
     full_text = ""
     for part in st.session_state.chat_gpt.execute_chain(
         message=input_text, session_id=st.session_state.session_id
@@ -64,14 +64,10 @@ if input_text:
         if is_final_result(part):
             llm_result = part
         else:
-            placeholder.write(
+            stream_placeholder.write(
                 full_text + part.content
             )  # - Streamlit aktualisiert den Platzhalter sofort
             full_text += part.content
-
-    # Optional: finalen Text irgendwo anzeigen oder weiterverarbeiten
-    st.write("Final:", llm_result.text)
-
 
 if llm_result is not None:
 
@@ -88,7 +84,7 @@ if llm_result is not None:
         prompt_tokens=llm_result.meta_daten["prompt_tokens"],
         completion_tokens=llm_result.meta_daten["completion_tokens"],
         latency_ms=llm_result.meta_daten["latency_ms"],
-        task_type="analys",
+        task_type=config.task_type,
         diagnose_mode=DiagnosisMode.RULES_AND_LLM,
     )
 
