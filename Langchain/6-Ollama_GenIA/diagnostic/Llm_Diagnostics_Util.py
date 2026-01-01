@@ -56,10 +56,7 @@ class LlmDiagnosticUtil:
         ## < 10 % dann würde man echte Abbrüche zu spät erkennen
         ## < 50 % könnte eine kurze pregnante Antwort sein
 
-        if (
-            completion_ratio < self.__config.hallucination_ratio_threshold
-            and task_type in {"explanation", "analysis"}
-        ):
+        if completion_ratio < self.__config.hallucination_ratio_threshold:
             return LlmDiagnosis(
                 issue="truncated_response",
                 confidence=0.9,
