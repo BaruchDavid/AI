@@ -174,7 +174,7 @@ class LlmDiagnosticUtil:
                 }
             )
         except Exception as e:
-            # optional: fallback
+            self.logger.exception("LLM-Error on diagnostic response")
             return LlmDiagnosis(
                 issue="hallucination_risk",
                 reason="LLM output could not be parsed reliably.",
