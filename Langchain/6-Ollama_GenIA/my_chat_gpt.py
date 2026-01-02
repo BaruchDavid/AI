@@ -32,6 +32,7 @@ class MyChatGpt:
 
     def execute_chain(self, *, message: str, session_id: str):
         full_text = ""
+
         try:
             for chunk in self._chain.stream(
                 {"input": message},
@@ -39,7 +40,7 @@ class MyChatGpt:
             ):
                 yield chunk
                 self.__save_history(history=full_text, chunk=chunk)
-                full_text += chunk
+                full_text += chunk.content
 
         except Exception:
             MAX_LOG_CHARS = 400
@@ -48,10 +49,18 @@ class MyChatGpt:
                 session_id,
                 message[:MAX_LOG_CHARS],
             )
-        raise
+            raise
 
-        raw_result = AIMessage(content=full_text, response_metadata={"streamed": True})
-        yield LlmResult(full_text, raw_result.response_metadata, raw_result)
+        raw_result = AIMessage(
+            content=full_text,
+            response_metadata={"streamed": True},
+        )
+
+        yield LlmResult(
+            full_text,
+            raw_result.response_metadata,
+            raw_result,
+        )
 
     def __save_history(self, *, history: str, chunk: str) -> str:
         if hasattr(chunk, "content"):
