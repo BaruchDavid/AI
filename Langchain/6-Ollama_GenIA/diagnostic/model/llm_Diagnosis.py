@@ -22,6 +22,14 @@ class LlmDiagnosis(BaseModel):
         "context_loss",
         "slow_response",
         "hallucination_risk",
-    ]
-    confidence: float = Field(ge=0.0, le=1.0)
-    reason: str
+    ] = Field(
+        description="Primary issue detected in the LLM response. "
+        "Use 'normal' if no problem is detected."
+    )
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Confidence level of the diagnosis. "
+        "0.0 means very uncertain, 1.0 means very certain.",
+    )
+    reason: str = Field(description="Short explanation justifying the selected issue.")
