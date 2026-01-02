@@ -188,13 +188,32 @@ class LlmDiagnosticUtil:
         completion_tokens: int,
         latency_ms: int,
         task_type: str,
-        diagnose_mode: DiagnosisMode = DiagnosisMode.RULES_AND_LLM,
+        diagnose_mode: DiagnosisMode | str = DiagnosisMode.RULES_AND_LLM,
     ) -> CombinedDiagnosis:
+
+        # --- Enum-Sicherheit ---
+        if isinstance(diagnose_mode, str):
+            try:
+                diagnose_mode = DiagnosisMode(diagnose_mode)
+            except ValueError:
+                raise ValueError(f"Unsupported diagnosis mode string: {diagnose_mode}")
+        else:
+            # Falls ein Enum aus einem anderen Modul oder Scope kommt
+            try:
+                diagnose_mode = DiagnosisMode(diagnose_mode.value)
+            except AttributeError:
+                raise ValueError(
+                    f"Invalid type for diagnose_mode: {type(diagnose_mode)}"
+                )
+            except ValueError:
+                raise ValueError(
+                    f"Unsupported diagnosis mode value: {diagnose_mode.value}"
+                )
+
+        self.logger.info(f"Rule_Based Diagnosis {diagnose_mode.value}")
 
         rule_result: LlmDiagnosis | None = None
         llm_result: LlmDiagnosis | None = None
-
-        self.logger.info(f"Rule_Based Diagnosis {diagnose_mode}")
 
         if diagnose_mode == DiagnosisMode.RULES_ONLY:
             rule_result = self._rule_based_check(
@@ -216,7 +235,7 @@ class LlmDiagnosticUtil:
                 final=final,
             )
 
-        if diagnose_mode == DiagnosisMode.LLM_ONLY:
+        elif diagnose_mode == DiagnosisMode.LLM_ONLY:
             llm_result = self._llm_based_check(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
@@ -230,7 +249,7 @@ class LlmDiagnosticUtil:
                 final=llm_result,
             )
 
-        if diagnose_mode == DiagnosisMode.RULES_THEN_LLM:
+        elif diagnose_mode == DiagnosisMode.RULES_THEN_LLM:
             rule_result = self._rule_based_check(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
@@ -258,7 +277,7 @@ class LlmDiagnosticUtil:
                 final=llm_result,
             )
 
-        if diagnose_mode == DiagnosisMode.RULES_AND_LLM:
+        elif diagnose_mode == DiagnosisMode.RULES_AND_LLM:
             rule_result = self._rule_based_check(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
@@ -294,4 +313,4 @@ class LlmDiagnosticUtil:
             )
 
         # --- Sicherheitsnetz ---
-        raise ValueError(f"Unsupported diagnosis mode: {diagnose_mode}")
+        raise ValueError(f"Unsupported diagnosis mode: {diagnose_mode.value}")
