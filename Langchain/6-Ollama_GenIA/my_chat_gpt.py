@@ -32,12 +32,23 @@ class MyChatGpt:
 
     def execute_chain(self, *, message: str, session_id: str):
         full_text = ""
-        for chunk in self._chain.stream(
-            {"input": message},
-            config={"configurable": {"session_id": session_id}},
-        ):
-            yield chunk
-            self.__save_history(history=full_text, chunk=chunk)
+        try:
+            for chunk in self._chain.stream(
+                {"input": message},
+                config={"configurable": {"session_id": session_id}},
+            ):
+                yield chunk
+                self.__save_history(history=full_text, chunk=chunk)
+                full_text += chunk
+
+        except Exception:
+            MAX_LOG_CHARS = 400
+            self.logger.exception(
+                "LLM streaming failed | session_id=%s | message=%r",
+                session_id,
+                message[:MAX_LOG_CHARS],
+            )
+        raise
 
         raw_result = AIMessage(content=full_text, response_metadata={"streamed": True})
         yield LlmResult(full_text, raw_result.response_metadata, raw_result)
