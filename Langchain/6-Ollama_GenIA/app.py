@@ -53,7 +53,7 @@ def is_final_result(part) -> bool:
 
 
 if input_text:
-    logger.debug(f"passing current session_id to llm: {st.session_state.session_id}")
+    logger.info(f"passing current session_id to llm: {st.session_state.session_id}")
     # Platzhalter für den Stream
     stream_placeholder = st.empty()
     full_text = ""
@@ -63,11 +63,13 @@ if input_text:
 
         if is_final_result(part):
             llm_result = part
-        else:
-            stream_placeholder.write(
-                full_text + part.content
-            )  # - Streamlit aktualisiert den Platzhalter sofort
+        elif hasattr(part, "content") and part.content:
+            stream_placeholder.write(full_text + part.content)
             full_text += part.content
+        else:
+            logger.info(
+                f"Skipping chunk without content: {part} with session-id: {st.session_state.session_id}"
+            )
 
 if llm_result is not None:
 
