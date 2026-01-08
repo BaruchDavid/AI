@@ -3,7 +3,6 @@ from langchain_community.chat_models import ChatOllama
 from diagnostic.model.diagnosis_Mode import DiagnosisMode
 from diagnostic.model.llm_Diagnosis import LlmDiagnosis
 from diagnostic.model.combined_Diagnosis import CombinedDiagnosis
-from langchain_community.chat_models import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from config.diagnostic_config import DiagnosticConfig
@@ -191,27 +190,7 @@ class LlmDiagnosticUtil:
         diagnose_mode: DiagnosisMode | str = DiagnosisMode.RULES_AND_LLM,
     ) -> CombinedDiagnosis:
 
-        # --- Enum-Sicherheit ---
-        if isinstance(diagnose_mode, str):
-            try:
-                diagnose_mode = DiagnosisMode(diagnose_mode)
-            except ValueError:
-                raise ValueError(f"Unsupported diagnosis mode string: {diagnose_mode}")
-        else:
-            # Falls ein Enum aus einem anderen Modul oder Scope kommt
-            try:
-                diagnose_mode = DiagnosisMode(diagnose_mode.value)
-            except AttributeError:
-                raise ValueError(
-                    f"Invalid type for diagnose_mode: {type(diagnose_mode)}"
-                )
-            except ValueError:
-                raise ValueError(
-                    f"Unsupported diagnosis mode value: {diagnose_mode.value}"
-                )
-
-        self.logger.info(f"Rule_Based Diagnosis {diagnose_mode.value}")
-
+        self._checkDiagnoseMode(diagnose_mode=diagnose_mode, optional_str_type=str)
         rule_result: LlmDiagnosis | None = None
         llm_result: LlmDiagnosis | None = None
 
@@ -314,3 +293,26 @@ class LlmDiagnosticUtil:
 
         # --- Sicherheitsnetz ---
         raise ValueError(f"Unsupported diagnosis mode: {diagnose_mode.value}")
+
+    def _checkDiagnoseMode(self, *, diagnose_mode, optional_str_type) -> None:
+
+        # --- Enum-Sicherheit ---
+        if isinstance(diagnose_mode, optional_str_type):
+            try:
+                diagnose_mode = DiagnosisMode(diagnose_mode)
+            except ValueError:
+                raise ValueError(f"Unsupported diagnosis mode string: {diagnose_mode}")
+        else:
+            # Falls ein Enum aus einem anderen Modul oder Scope kommt
+            try:
+                diagnose_mode = DiagnosisMode(diagnose_mode.value)
+            except AttributeError:
+                raise ValueError(
+                    f"Invalid type for diagnose_mode: {type(diagnose_mode)}"
+                )
+            except ValueError:
+                raise ValueError(
+                    f"Unsupported diagnosis mode value: {diagnose_mode.value}"
+                )
+
+        self.logger.info(f"Rule_Based Diagnosis {diagnose_mode.value}")
