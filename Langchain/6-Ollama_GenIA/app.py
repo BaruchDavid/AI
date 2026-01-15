@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 ## set envs for keeping app in LangSmith
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+os.environ["ALPHA_VANTAGE_KEY"] = os.getenv("ALPHA_VANTAGE_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
@@ -57,18 +58,18 @@ if input_text:
     # Platzhalter für den Stream
     stream_placeholder = st.empty()
     full_text = ""
-    for part in st.session_state.chat_gpt.execute_chain(
+    for chunk in st.session_state.chat_gpt.execute_chain(
         message=input_text, session_id=st.session_state.session_id
     ):
 
-        if is_final_result(part):
-            llm_result = part
-        elif hasattr(part, "content") and part.content:
-            stream_placeholder.write(full_text + part.content)
-            full_text += part.content
+        if is_final_result(chunk):
+            llm_result = chunk
+        elif hasattr(chunk, "content") and chunk.content:
+            stream_placeholder.write(full_text + chunk.content)
+            full_text += chunk.content
         else:
             logger.info(
-                f"Skipping chunk without content: {part} with session-id: {st.session_state.session_id}"
+                f"Skipping chunk without content: {chunk} with session-id: {st.session_state.session_id}"
             )
 
 if llm_result is not None:
