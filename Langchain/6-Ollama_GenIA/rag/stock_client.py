@@ -1,5 +1,6 @@
 import requests
 import logging
+from typing import Any
 
 
 class StockClient:
@@ -11,13 +12,14 @@ class StockClient:
         "apikey": "",
     }
 
-    def __init__(self, *, api_key):
+    def __init__(self, *, api_key, http=None):
+        self.__http = http or requests
         self._params("apikey") = api_key
         self._logger = logging.getLogger(__name__)
 
-    def check_stocks(self) -> str:
+    def check_stocks(self) -> Any:
         try:
-            response= requests.get(self._alpha_avantage_url, params=self._params, timeout=10,)
+            response= self.__http.get(self._alpha_avantage_url, params=self._params, timeout=10,)
             response.raise_for_status()
             return response.json()
             
