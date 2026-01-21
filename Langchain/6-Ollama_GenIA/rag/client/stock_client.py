@@ -13,7 +13,7 @@ class StockClient:
         self.__http = http or requests
         self._logger = logging.getLogger(__name__)
         self._params = {
-            "function": "TIME_SERIES_DAILY_ADJUSTED",
+            "function": "TIME_SERIES_DAILY",
             "symbol": "SPY",
             "apikey": api_key,
         }
