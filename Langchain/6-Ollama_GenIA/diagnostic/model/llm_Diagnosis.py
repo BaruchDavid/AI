@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Literal
 from pydantic import Field
 
 """ Das ist kein normaler Datencontainer, sondern:
