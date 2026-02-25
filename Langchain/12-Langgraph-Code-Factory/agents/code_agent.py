@@ -108,6 +108,22 @@ IMPORTANT: When saving code to a file, make sure it's complete, well-documented,
         self.tools = tools
         self.llm_with_tools = self.llm.bind_tools(tools)
 
+    def _ensure_system_prompt(self, messages: list[AnyMessage]) -> list[AnyMessage]:
+        """
+        Ensure that the system prompt is present at the beginning of the message list.
+
+        If no SystemMessage is found, prepends the system prompt to the messages.
+
+        Args:
+            messages: Original list of messages
+
+        Returns:
+            Updated list of messages with system prompt at the beginning
+        """
+        if not self._has_system_message(messages):
+            return [SystemMessage(content=self.system_prompt)] + messages
+        return messages
+
     def process(self, state: AgentState) -> dict:
         """
         Process the agent state through the LLM with system prompt.
@@ -125,9 +141,8 @@ IMPORTANT: When saving code to a file, make sure it's complete, well-documented,
 
         messages = state["messages"]
 
-        # Inject system prompt if not already present
-        if not any(isinstance(msg, SystemMessage) for msg in messages):
-            messages = [SystemMessage(content=self.system_prompt)] + messages
+        # Ensure system prompt is present
+        messages = self._ensure_system_prompt(messages)
 
         response = self.llm_with_tools.invoke(messages)
         return {"messages": [response]}
