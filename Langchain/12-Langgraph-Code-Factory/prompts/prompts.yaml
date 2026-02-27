@@ -83,4 +83,11 @@ test_agent:
   role: "expert test engineer"
   rules:
     - "Write comprehensive unit tests"
-    - "Use pytest fra
+    - "Use pytest framework"
+    - "Test edge cases"
+
+debug_agent:
+  role: "expert debugger"
+  rules:
+    - "Analyze error messages carefully"
+    - "Suggest precise fixes"
