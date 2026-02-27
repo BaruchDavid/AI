@@ -21,9 +21,7 @@ def write_file(filepath: str, content: str) -> str:
     try:
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(content)
-        return (
-            f"✅ File '{filepath}' successfully created with {len(content)} characters"
-        )
+        return (f"✅ File '{filepath}' successfully created with {len(content)} characters")
     except Exception as ex:
         return f"❌ Error writing file: {str(ex)}"
 
