@@ -41,18 +41,18 @@ class GraphBuilder:
 
         # Add nodes
         builder.add_node("agent", self.agent.process)
-        builder.add_node("tools", ToolNode(self.tools))
+        builder.add_node("tools_list", ToolNode(self.tools))
 
         # Add edges
         builder.add_edge(START, "agent")
 
         # Conditional edge: agent decides whether to use tools or end
         builder.add_conditional_edges(
-            "agent", tools_condition, {"tools": "tools", "__end__": END}
+            "agent", tools_condition, {"tools": "tools_list", "__end__": END}
         )
 
-        # After tools execution, return to agent
-        builder.add_edge("tools", "agent")
+        # After tools_list execution, return to agent
+        builder.add_edge("tools_list", "agent")
 
         # Compile
         self.graph = builder.compile()
