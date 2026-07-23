@@ -1,6 +1,6 @@
-from typing import Annotated  # labeling
-from typing_extensions import TypedDict, list
+from typing_extensions import TypedDict  # for type hinting
 from langgraph.graph.message import add_messages
+from typing import Annotated
 
 
 class State(TypedDict):
