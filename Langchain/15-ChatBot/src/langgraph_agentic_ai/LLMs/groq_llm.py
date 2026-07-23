@@ -15,9 +15,9 @@ class GroqLLM:
         with the selected Groq model and API key.
         """
         try:
-            groq_api_key = self.user_controls.get["GROQ_API_KEY"]
-            selected_groq_model = self.user_controls.get["GROQ_MODEL"]
-            if groq_api_key == "" and os.environ["GROQ_API_KEY"] == "":
+            groq_api_key = self.user_controls.get("selected_groq_api_key")
+            selected_groq_model = self.user_controls.get("selected_groq_model")
+            if groq_api_key == "" and os.environ.get("selected_groq_api_key", "") == "":
                 st.error("Error: Groq API key is not set. Please provide a valid API key.")
 
             llm = ChatGroq(model=selected_groq_model, api_key=groq_api_key)
@@ -25,3 +25,4 @@ class GroqLLM:
         except Exception as e:
             raise RuntimeError(f"Error initializing Groq LLM: {e}")
         return llm
+    
