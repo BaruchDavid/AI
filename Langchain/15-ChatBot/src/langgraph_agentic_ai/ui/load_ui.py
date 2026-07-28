@@ -44,7 +44,7 @@ class LoadStreamlitUI:
             # Usecase selection
             self.user_controls["selected_usecase"] = st.selectbox("Select Use Case", usecase_options)
 
-            if self.user_controls["selected_usecase"] == "Chatboot with Web":
+            if self.user_controls["selected_usecase"] == "Chatboot with Web" or self.user_controls["selected_usecase"] == "AI News":
                 self.user_controls["TAVILY_API_KEY "] = st.session_state["TAVILY_API_KEY"] = st.text_input(
                     "TAVILY_API_KEY", type="password", value=os.environ.get("TAVILY_API_KEY", "")
                 )
@@ -52,4 +52,12 @@ class LoadStreamlitUI:
                 if not self.user_controls["TAVILY_API_KEY"]:
                     st.warning("Please enter your TAVILY API key. refer https://tavily.com/")
 
+            if self.user_controls["selected_usecase"].strip() == "AI News":
+                st.subheader("AI News Use Case")
+                with st.sidebar:
+                    time_frame = st.selectbox("Select Time Frame", ["Last 24 hours", "Last 7 days", "Last 30 days"], index=0)
+
+                if st.button("Fetch AI News", use_container_width=True):
+                    st.session_state.timeframe = time_frame
+                    st.session_state.IsFechtButtonClicked = True
         return self.user_controls
