@@ -9,3 +9,6 @@ class State(TypedDict):
     """
 
     messages: Annotated[list, add_messages]  # List of messages exchanged in the application
+    news_data: list  # Fetched news articles from Tavily
+    summary: str  # Summarized news content
+    filename: str  # Path to the saved summary file
