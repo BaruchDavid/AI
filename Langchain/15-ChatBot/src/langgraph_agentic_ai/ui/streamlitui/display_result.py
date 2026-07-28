@@ -20,6 +20,7 @@ class DisplayResultSteamlit:
         user_message = self.user_message
 
         if usecase == "Basic Chatbot":
+
             for event in graph.stream({"messages": ("user", user_message)}):
                 print(event.values())
                 for value in event.values():
@@ -28,3 +29,20 @@ class DisplayResultSteamlit:
                         st.write(user_message)
                     with st.chat_message("assistant"):
                         st.write(value["messages"].content)
+
+        if usecase.strip() == "Chatboot with Tools":
+            initial_state = {"messages": [user_message]}
+            res = graph.invoke(initial_state)
+            for messages in res["messages"]:
+                if type(messages) == HumanMessage:
+                    with st.chat_message("user"):
+                        st.write(messages.content)
+                elif type(messages) == ToolMessage:
+                    with st.chat_message("ai"):
+                        st.write("Tool Call Start")
+                        st.write(messages.content)
+                        st.write("Tool Call End")
+
+                elif type(messages) == AIMessage and messages.content:
+                    with st.chat_message("assistant"):
+                        st.write(messages.content)
