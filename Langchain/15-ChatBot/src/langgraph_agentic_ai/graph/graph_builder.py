@@ -41,7 +41,7 @@ class GraphBuilder:
         llm = self.llm
 
         obj_chatbot_with_nodes = ChatbotWithToolNode(llm)
-        chatbot_node = obj_chatbot_with_nodes.crate_chatbot(tools)
+        chatbot_node = obj_chatbot_with_nodes.create_chatbot(tools)
 
         ## define nodes in the graph
         self.graph_builder.add_node("ChatbotWithToolsNode", chatbot_node)
