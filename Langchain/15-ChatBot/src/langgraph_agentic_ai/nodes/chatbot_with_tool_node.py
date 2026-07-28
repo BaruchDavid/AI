@@ -37,7 +37,7 @@ class ChatbotWithToolNode:
         return {"messages": [llm_response, tool_response]}
 
     ## binding llm with tools
-    def crate_chatbot(self, tools):
+    def create_chatbot(self, tools):
         """
         Returns a ChatbotWithToolNode node function
         """
@@ -45,7 +45,7 @@ class ChatbotWithToolNode:
 
         def chatbot_node(state: State):
             """
-            Chatbot logic for processing the input state and returning a response.
+            Triggers the llm with invoke to eather to generate text or use a tool
             """
             return {"messages": [llm_with_tools.invoke(state["messages"])]}
 
