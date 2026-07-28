@@ -32,7 +32,7 @@ class DisplayResultSteamlit:
 
         if usecase.strip() == "Chatboot with Tools":
             initial_state = {"messages": [user_message]}
-            res = graph.invoke(initial_state)
+            res = graph.invoke(initial_state)  ##invoke to build the graph with all nodes and edges
             for messages in res["messages"]:
                 if type(messages) == HumanMessage:
                     with st.chat_message("user"):
