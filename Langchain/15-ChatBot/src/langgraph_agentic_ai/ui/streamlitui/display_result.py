@@ -19,7 +19,7 @@ class DisplayResultSteamlit:
         graph = self.graph
         user_message = self.user_message
 
-        if usecase == "Basic Chatbot":
+        if usecase.strip() == "Basic Chatbot":
 
             for event in graph.stream({"messages": ("user", user_message)}):
                 print(event.values())
@@ -46,3 +46,18 @@ class DisplayResultSteamlit:
                 elif type(messages) == AIMessage and messages.content:
                     with st.chat_message("assistant"):
                         st.write(messages.content)
+
+        if usecase.strip() == "AI News":
+            frequency = self.user_message
+            with st.spinner("Fetching and summarizing AI news..."):
+                result = graph.invoke({"messages": frequency})
+                try:
+                    AI_NEWS_PATH = f"./AINews/{frequency.lower()}_summary.md"
+                    with open(AI_NEWS_PATH, "r", encoding="utf-8") as f:
+                        markdown_content = f.read()
+
+                    st.markdown(markdown_content, unsafe_allow_html=True)
+                except FileNotFoundError:
+                    st.error(f"News Not Generated or File not found : {AI_NEWS_PATH}. Please check the frequency and try again.")
+                except Exception as e:
+                    st.error(f"An error occurred while reading the news summary: {str(e)}")
