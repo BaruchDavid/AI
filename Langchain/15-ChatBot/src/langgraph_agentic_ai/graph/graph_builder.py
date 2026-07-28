@@ -5,6 +5,7 @@ from src.langgraph_agentic_ai.state.state import State
 from src.langgraph_agentic_ai.nodes.basic_chatbot_node import BasicChatbotNode
 from src.langgraph_agentic_ai.tools.search_tool import get_tavily_tools, create_tooLnode
 from src.langgraph_agentic_ai.nodes.chatbot_with_tool_node import ChatbotWithToolNode
+from src.langgraph_agentic_ai.nodes.ai_news_node import AINewsNode
 from langgraph.prebuilt import ToolNode, tools_condition
 
 
@@ -59,9 +60,23 @@ class GraphBuilder:
         self.graph_builder.add_edge("tools", "ChatbotWithToolsNode")  ## Kante führt zurück zum ChatbotWithWeb, um die Antwort zu erhalten.
         self.graph_builder.add_edge("ChatbotWithToolsNode", END)
 
+    def ai_new_builder_graph(self, usecase):
+
+        aiNewsNode_instance = AINewsNode(self.llm)
+        self.graph_builder.add_node("fetch_news", aiNewsNode_instance.fetch_news)
+        self.graph_builder.add_node("summerize_news", aiNewsNode_instance.summarize_news)
+        self.graph_builder.add_node("save_results", aiNewsNode_instance.save_result)
+
+        self.graph_builder.set_entry_point("fetch_news")  # starte graphen bei 'fetch_news'
+        self.graph_builder.add_edge("fetch_news", "summerize_news")  # Kante von 'fetch_news' zu 'summerize_news'
+        self.graph_builder.add_edge("summerize_news", "save_results")  # Kante von 'summerize_news' zu 'save_results'
+        self.graph_builder.add_edge("save_results", END)  # Kante von 'summerize_news' zu 'save_results'
+
     def setup_graph(self, usecase):
         if usecase == "Basic Chatbot":
             self.basic_chatbot_build_graph()
         if usecase == "Chatboot with Tools":
             self.chatbot_with_tools_build_graph()
+        if usecase == "AI News":
+            self.ai_new_builder_graph(usecase)
         return self.graph_builder.compile()
