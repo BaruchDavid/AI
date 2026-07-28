@@ -20,6 +20,8 @@ class LoadStreamlitUI:
         st.set_page_config(page_title=self.config.get_page_title(), layout="wide")
         st.title(self.config.get_page_title())
         st.header("Welcome to LangGraph: Build Stateful Agentic AI graph")
+        st.session_state.IsFetchButtonClicked = False  # Initialize the session state variable
+        st.session_state.timeframe = None  # Initialize the session state variable
 
         with st.sidebar:
             llm_options = self.config.get_llm_options()
@@ -59,5 +61,5 @@ class LoadStreamlitUI:
 
                 if st.button("Fetch AI News", use_container_width=True):
                     st.session_state.timeframe = time_frame
-                    st.session_state.IsFechtButtonClicked = True
+                    st.session_state.IsFetchButtonClicked = True
         return self.user_controls
