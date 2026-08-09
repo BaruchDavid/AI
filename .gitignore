@@ -8,3 +8,4 @@ Langchain/6-Ollama_GenIA/**/__pycache__/*
 Langchain/**/__pycache__/*
 Langchain/7-Agents/**
 Langchain/11-LangGraph/**
+Langchain/16-Agentic-Blog-generation/.langgraph_api/*
