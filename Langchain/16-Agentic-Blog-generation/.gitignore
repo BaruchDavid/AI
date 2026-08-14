@@ -1,0 +1,11 @@
+.env
+Langchain/1-DataIgnestion/HKurs.txt
+Langchain/1-DataIgnestion/Tempel.pdf
+Langchain/5-OpenAI/**/*
+Langchain/4-Ollama_Embeddings/**/*
+Langchain/3-Embeddings/**/*
+Langchain/6-Ollama_GenIA/**/__pycache__/*
+Langchain/**/__pycache__/*
+Langchain/7-Agents/**
+Langchain/11-LangGraph/**
+Langchain/16-Agentic-Blog-generation/.langgraph_api/*
